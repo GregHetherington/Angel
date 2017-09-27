@@ -1,0 +1,157 @@
+/*
+
+* Cis2750 F2017
+
+* Assignment 0
+
+* Greg Hetherington 0936504
+
+* description of file contents*
+
+* resources used*
+
+*/
+
+#include "LinkedListAPI.h"
+
+List initializeList(char* (*printFunction)(void *toBePrinted),void (*deleteFunction)(void *toBeDeleted),int (*compareFunction)(const void *first,const void *second)) {
+    struct listHead newListHead;
+
+    newListHead.head = NULL;
+    newListHead.tail = NULL;
+    newListHead.printData = printFunction;
+    newListHead.deleteData = deleteFunction;
+    newListHead.compare = compareFunction;
+
+    return newListHead;
+}
+
+Node *initializeNode(void *data) {
+    if (data == NULL) {
+        struct listNode* newListNode;
+
+        newListNode = ( struct listNode* )malloc( sizeof( *newListNode));
+        newListNode->data = data;
+        newListNode->next = NULL;
+        newListNode->previous = NULL;
+
+        return newListNode;
+    } else {
+        return NULL;
+    }
+}
+
+void insertFront(List *list, void *toBeAdded) {
+    Node* newNode = initializeNode(toBeAdded);
+    if (list->head == NULL) {
+        list->head = newNode;
+        list->tail = newNode;
+    } else {
+        list->head->previous = newNode;
+        newNode->next = list->head;
+        list->head = newNode;
+    }
+}
+
+void insertBack(List *list, void *toBeAdded) {
+    Node* newNode = initializeNode(toBeAdded);
+    if (list->head == NULL) {
+        list->head = newNode;
+        list->tail = newNode;
+    } else {
+        newNode->previous = list->tail;
+        list->tail->next = newNode;
+        list->tail = newNode;
+    }
+}
+
+void clearList(List *list) {
+    if (list != NULL) {
+        Node* current = list->head;
+        Node* next;
+        while (current != NULL) {
+            next = current->next;
+            free(current);
+            current = next;
+        }
+    }
+}
+
+void insertSorted(List *list, void *toBeAdded) {
+    Node* newNode = initializeNode(toBeAdded);
+    if (list->head == NULL) {
+        list->head = newNode;
+        list->tail = newNode;
+    } else {
+        
+    }
+}
+
+void* deleteDataFromList(List *list, void *toBeDeleted) {
+    if (list->head != NULL) {
+        Node* current = list->head;
+        Node* next;
+        while (current != NULL) {
+            next = current->next;
+            if (current->data == toBeDeleted) {
+                list->deleteData(toBeDeleted);
+                return current->data;
+            }
+            current = next;
+        }
+    }
+    return NULL;
+}
+
+void* getFromFront(List *list) {
+    if (list->head != NULL) {
+        return list->head->data;
+    }
+    return NULL;
+}
+
+void* getFromBack(List *list) {
+    if (list->head != NULL) {
+        return list->tail->data;
+    }
+    return NULL;
+}
+/*
+char* toString(List list) {
+    if (list != NULL) {
+        char* returnString;
+        Node current = list.head;
+        Node next;
+        while(current != NULL) {
+            next = current.next;
+            char* stringOfCurrent;
+            stringOfCurrent = (char*)current->data;
+            strcpy(returnString, stringOfCurrent);
+            strcpy(returnString, "\n");
+            current = next;
+        }
+        return returnString;
+    }
+    return NULL;
+}
+*/
+ListIterator createIterator(List list) {
+    if (list.head != NULL) {
+        ListIterator listIter;
+        listIter.current = list.head;
+        return listIter;
+    } else {
+        ListIterator listIter;
+        return listIter;
+    }
+}
+
+void* nextElement(ListIterator* iter) {
+    if (iter != NULL && iter->current != NULL) {
+        return iter->current->data;
+        iter->current = iter->current->next;
+    }
+    return NULL;
+}
+
+int main(
