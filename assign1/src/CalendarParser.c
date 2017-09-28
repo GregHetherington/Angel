@@ -112,7 +112,7 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
         } else if (strcmp(fileContentsType[i], "UID") == 0) {//in create vevent state
             //set UID
             strcpy((**obj).event->UID, fileContentsData[i]);
-        } else if (strcmp(fileContentsType[i], "DTSTAMP") == 0) {//in create vcal state
+        } else if (strcmp(fileContentsType[i], "DTSTAMP") == 0) {//in create vevent state
             //set DTSTAMP
             char date[9];
             char time[7];
@@ -123,11 +123,19 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                 time[i-1] = p[i];
                 time[i] = '\0';
             }
-            //printf("D:%s T:%s\n", date, time);
+            if (time[strlen(time) - 1] == 'Z') {
+                (**obj).event->creationDateTime.UTC = true;
+            } else {
+                (**obj).event->creationDateTime.UTC = false;
+            }
+            //printf("D:{%s} T:{%s}\n", date, time);
             strcpy((**obj).event->creationDateTime.time, time);
             strcpy((**obj).event->creationDateTime.date, date);
-        } else if (strcmp(fileContentsType[i], "ORGANIZER") == 0) {//in create vcal state
-            //set organizer
+        } else if (strcmp(fileContentsType[i], "ORGANIZER") == 0) {//in create vevent state
+            //set organizer as a property
+            strcpy((**obj).prodID, fileContentsData[i]);
+        } else if (strcmp(fileContentsType[i], "DTSTART") == 0) {//in create vevent state
+            //set DTSTART as a property
             strcpy((**obj).prodID, fileContentsData[i]);
         }
     }
