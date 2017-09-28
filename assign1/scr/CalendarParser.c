@@ -64,13 +64,30 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
             } else if (line[i] != ' ') {
                 removeSpacesFromfrontOfString(line);
                 if (isStringOnlySpaces(line) == 0) {
-                    char *p = strtok(line, ":");
-                    fileContentsType[k] = (char *)malloc(sizeof(p) + 1);
-                    strcpy(fileContentsType[k], p);
-                    p = strtok(NULL, ":");
-                    fileContentsData[k] = (char *)malloc(sizeof(p) + 1);
-                    strcpy(fileContentsData[k], p);
+                    char* type = malloc((strlen(line) + 1) * sizeof(char));
+                    char* data = malloc((strlen(line) + 1) * sizeof(char));
+                    int c = 0;
+                    for(int i = 0; i <= strlen(line); i++) {
+                        if (c != 0 && line[i] != '\0') {
+                            data[i-c-1] = line[i];
+                        } else if (line[i] == ':' && c == 0) {
+                            type[i] = '\0';
+                            c = i;
+                        } else if (line[i] == '\0') {
+                            data[i-c-1] = '\0';
+                        } else {
+                            type[i] = line[i];
+                        }
+                    }
+                    //printf("T:%s D:%s\n", type, data);
+                    fileContentsType[k] = malloc((strlen(type) + 1) * sizeof(char));
+                    strcpy(fileContentsType[k], type);
+                    
+                    fileContentsData[k] = malloc((strlen(data) + 1) * sizeof(char));
+                    strcpy(fileContentsData[k], data);
                     k++;
+                    free(type);
+                    free(data);
                 }
                 break;
             }
@@ -84,12 +101,34 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                 //state is create vcal
             } else if (strcmp(fileContentsData[i], "VEVENT") == 0) {
                 //state is create vevent
+                (**obj).event = malloc(sizeof(Event));
             }
-        } else if (strcmp(fileContentsType[i], "VERSION") == 0) {//in create vcal state & version
+        } else if (strcmp(fileContentsType[i], "VERSION") == 0) {//in create vcal state
             //set version
             (**obj).version = atof(fileContentsData[i]);
-        } else if (strcmp(fileContentsType[i], "PRODID") == 0) {
+        } else if (strcmp(fileContentsType[i], "PRODID") == 0) {//in create vcal state
             //set prod id
+            strcpy((**obj).prodID, fileContentsData[i]);
+        } else if (strcmp(fileContentsType[i], "UID") == 0) {//in create vevent state
+            //set UID
+            strcpy((**obj).event->UID, fileContentsData[i]);
+        } else if (strcmp(fileContentsType[i], "DTSTAMP") == 0) {//in create vcal state
+            //set DTSTAMP
+            char date[9];
+            char time[7];
+            strncpy(date, fileContentsData[i], 8);
+            date[8] = '\0';
+            char* p = strchr(fileContentsData[i], 'T');
+            for(int i = 1; i < strlen(p); i++) {
+                time[i-1] = p[i];
+                time[i] = '\0';
+            }
+            //printf("D:%s T:%s\n", date, time);
+            strcpy((**obj).event->creationDateTime.time, time);
+            strcpy((**obj).event->creationDateTime.date, date);
+        } else if (strcmp(fileContentsType[i], "ORGANIZER") == 0) {//in create vcal state
+            //set organizer
+            strcpy((**obj).prodID, fileContentsData[i]);
         }
     }
 
