@@ -137,7 +137,7 @@ void* deleteDataFromList(List *list, void *toBeDeleted) {
                     list->tail = list->tail->previous;
                 }
                 void* returnData = current->data;
-                free(current);
+                //free(current);
                 return returnData;
             }
             current = current->next;

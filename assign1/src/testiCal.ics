@@ -1,41 +1,19 @@
-; start of icalobject
-BEGIN:VCALENDAR
-    ; highest version number or the minimum and maximum range of the
-    ; iCalendar specification that is required in order to interpret the
-    ; iCalendar object (required)
-    ; Well stick with 2.0
-    VERSION:2.0
-    ; identifier for the product that created the iCalendar object (required)
-    PRODID:-//CIS2750//NONSGML Assignment1//EN
-    ; There must be at least one component in an iCalendar object
-    ; this one has a simple event (VEVENT) component
-    ; Start of event
-    BEGIN:VEVENT
-        ; an event object is a collection of properties, some of which
-        ; are required, while others are optional
-        ; unique ID (required)
-        UID:uid1@example.com
-        ; date/time that the instance of the iCalendar object was
-        ; created (required)
-        DTSTAMP:19970714T170000Z
-        ; organizer for a calendar component (optional)
-        ; CN is the common or display name associated with the "Organizer"
-        ; mailto URL scheme is used to designate the Internet mailing
-        ; address of an individual or service - in this case the organizer
-        ORGANIZER:CN=John Doe:MAILTO:john.doe@example.com
-        ; start date/time of the calendar event (optional)
-        DTSTART:19970714T170000Z
-                        
-        ; end date/time of the calendar event
-        ; either 'dtend' or 'duration' may appear in a eventprop'
-        ; you MUST include one of them if you have included dtstart, as we
-        ; did above. However, 'dtend' and duration MUST NOT occur in the
-        ; same 'event'
-        DTEND:19970715T035959Z
-        ; This property defines a short summary or subject for the
-        ; calendar component. (optional)
-        SUMMARY:Bastille Day Party
-    ; end of event
-    END:VEVENT
-; end of icalobject
-END:VCALENDAR 
+BEGIN:VCALENDARVERSION:2.0
+PRODID:-//hacksw/handcal//NONSGML v1.0//EN
+BEGIN:VEVENT
+UID:uid1@example.com
+DTSTAMP:19970714T170000Z
+ORGANIZER;CN=John Doe:MAILTO:john.doe@example.com
+DTSTART:19970714T170000Z
+DTEND:19970715T035959Z
+CLASS:PUBLIC
+SUMMARY:Bastille Day Party
+BEGIN:VALARM
+TRIGGER:-PT30M
+REPEAT:2
+DURATION:PT15M
+ACTION:DISPLAY
+DESCRIPTION:Breakfast meeting with executive team at 8:30 AM EST.
+END:VALARM
+END:VEVENT
+END:VCALENDAR
