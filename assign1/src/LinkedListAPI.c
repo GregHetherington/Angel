@@ -84,7 +84,7 @@ void clearList(List *list) {
         list->tail = NULL;
         while (current != NULL) {
             next = current->next;
-            list->deletedata(current);
+            list->deleteData(current);
             current = next;
         }
     }
@@ -162,16 +162,26 @@ void* getFromBack(List list) {
 
 char* toString(List list) {
     if (list.head != NULL) {
-        char* returnString = malloc(1000);
-        Node* current = list.head;
-        while(current != NULL) {
-            char* stringOfCurrent = list.printData(current->data);
-            strcat(returnString, stringOfCurrent);
-            current = current->next;
+        List temp = list;
+        char* string;
+        int count = 0;
+        while(temp.head != NULL) {
+            string = list.printData(temp.head->data);
+            count += strlen(string) + 3;
+            free(string);
+            temp.head = temp.head->next;
         }
-        return returnString;
+        char * data = calloc(count, sizeof(char));
+        while(list.head != NULL) {
+            string = list.printData(list.head->data);
+            strcat(data, string);
+            free(string);
+            data = strcat(data, " ");
+            list.head = list.head->next;
+        }
+        return string;
     } else {
-        return "empty list";
+        return NULL;
     }
 }
 
