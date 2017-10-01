@@ -60,7 +60,7 @@ int getFileLenght(char *fileName) {
     }                                                
     while (fgets(line, sizeof(line), f) != NULL) {
         fileLenght++;
-    }
+    } fclose(f);
     return fileLenght;
 }
 
@@ -185,15 +185,15 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
     }
     fclose(iCalFile);
     
-    char **state = malloc(fileLenght * sizeof(char *));//malloc
+    char **state = malloc(10 * sizeof(char *));//malloc
     int stateNum = 0;
 
     for (int i = 0; fileContentsType[i] != NULL; i++) {
         printf("State:{%s},Type:{%s},Data:{%s}\n", state[stateNum], fileContentsType[i], fileContentsData[i]);
         if (strcmp(fileContentsType[i], "BEGIN") == 0) {
             stateNum++;
-            state[stateNum] = malloc((strlen(fileContentsData[i]) + 1) * sizeof(char));//malloc looped
-            
+            state[stateNum] = malloc((strlen(fileContentsData[i]) + 1) * sizeof(char));
+
             if (strcmp(fileContentsData[i], "VCALENDAR") == 0) {
                 strcpy(state[stateNum], "VCALENDAR");
                 (**obj).version = -1;
@@ -301,6 +301,7 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
         free(fileContentsType[i]);
     }
     free(fileContentsType);
+    
     
     return OK;
 }
