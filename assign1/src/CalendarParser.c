@@ -22,6 +22,9 @@
 #include "../include/HelperFunctions.h"
 
 int isVersionMalformed(char * version) {
+    if (version == NULL || strcmp(version, "") == 0) {
+        return 0;
+    }
     int numberOfDecimals = 0;
     for (int i = 0; i < strlen(version); i++) {
         if (!isdigit(version[i]) && version[i] != '.') {
@@ -141,8 +144,8 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
     }
     int k = 0;
     int fileLenght = getFileLenght(fileName);
-    char** fileContentsData = malloc(fileLenght * sizeof(char *));
-    char** fileContentsType = malloc(fileLenght * sizeof(char *));
+    char** fileContentsData = malloc(fileLenght * sizeof(char *));//malloc
+    char** fileContentsType = malloc(fileLenght * sizeof(char *));//malloc
     
     while (fgets(line, sizeof(line), iCalFile) != NULL) {
         for (int i = 0; line[i] != '\0'; i++) {
@@ -151,8 +154,8 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
             } else if (line[i] != ' ') {
                 removeSpacesFromfrontOfString(line);
                 if (isStringOnlySpaces(line) == 0) {
-                    char* type = malloc((strlen(line) + 1) * sizeof(char));
-                    char* data = malloc((strlen(line) + 1) * sizeof(char));
+                    char* type = malloc((strlen(line) + 1) * sizeof(char));//malloc
+                    char* data = malloc((strlen(line) + 1) * sizeof(char));//malloc
                     int c = 0;
                     for(int i = 0; i <= strlen(line); i++) {
                         if (c != 0 && line[i] != '\0') {
@@ -167,11 +170,10 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                             type[i] = line[i];
                         }
                     }
-                    //printf("T:%s D:%s\n", type, data);
-                    fileContentsType[k] = malloc((strlen(type) + 1) * sizeof(char));
+                    fileContentsType[k] = malloc((strlen(type) + 1) * sizeof(char));//malloc looped
                     strcpy(fileContentsType[k], type);
                     
-                    fileContentsData[k] = malloc((strlen(data) + 1) * sizeof(char));
+                    fileContentsData[k] = malloc((strlen(data) + 1) * sizeof(char));//malloc looped
                     strcpy(fileContentsData[k], data);
                     k++;
                     free(type);
@@ -183,14 +185,14 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
     }
     fclose(iCalFile);
     
-    char **state = malloc(fileLenght * sizeof(char *));
+    char **state = malloc(fileLenght * sizeof(char *));//malloc
     int stateNum = 0;
-        
-    for (int i = 0; i < fileLenght; i++) {
+
+    for (int i = 0; fileContentsType[i] != NULL; i++) {
         printf("State:{%s},Type:{%s},Data:{%s}\n", state[stateNum], fileContentsType[i], fileContentsData[i]);
         if (strcmp(fileContentsType[i], "BEGIN") == 0) {
             stateNum++;
-            state[stateNum] = malloc((strlen(fileContentsData[i]) + 1) * sizeof(char));
+            state[stateNum] = malloc((strlen(fileContentsData[i]) + 1) * sizeof(char));//malloc looped
             
             if (strcmp(fileContentsData[i], "VCALENDAR") == 0) {
                 strcpy(state[stateNum], "VCALENDAR");
@@ -209,10 +211,11 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                 Alarm * newAlarm = malloc(sizeof(Alarm));
                 newAlarm->properties = initializeList(testPrint, testDestroy, testCompare);
                 insertBack(&(**obj).event->alarms, newAlarm);
+            } else {
+                strcpy(state[stateNum], "OTHER");
             }
         } else if (strcmp(fileContentsType[i], "END") == 0) {
-            stateNum--;
-            
+            stateNum--;            
                 if (strcmp(fileContentsData[i], "VCALENDAR") == 0) {
                     //check for missing proporties
                     if ((**obj).version == -1 || strcmp((**obj).prodID, "-1") == 0) {
@@ -257,11 +260,11 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
             strncpy(date, fileContentsData[i], 8);
             date[8] = '\0';
             char* p = strchr(fileContentsData[i], 'T');
-            for(int i = 1; i < strlen(p); i++) {
+            for(int i = 1; i < strlen(p) - 1; i++) {
                 time[i-1] = p[i];
                 time[i] = '\0';
             }
-            if (time[strlen(time) - 1] == 'Z') {
+            if (fileContentsData[i][15] == 'Z') {
                 (**obj).event->creationDateTime.UTC = true;
             } else {
                 (**obj).event->creationDateTime.UTC = false;
@@ -270,16 +273,16 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
             strcpy((**obj).event->creationDateTime.date, date);
         } else if (strcmp(fileContentsType[i], "ACTION") == 0 && strcmp(state[stateNum], "VALARM") == 0) {
             List alarmList = (**obj).event->alarms;
-            Alarm * alarm = getFromFront(alarmList);
+            Alarm * alarm = getFromBack(alarmList);
             strcpy(alarm->action, fileContentsData[i]);
         } else if (strcmp(fileContentsType[i], "TRIGGER") == 0 && strcmp(state[stateNum], "VALARM") == 0) {
             List alarmList = (**obj).event->alarms;
-            Alarm * alarm = getFromFront(alarmList);
+            Alarm * alarm = getFromBack(alarmList);
             alarm->trigger = malloc(sizeof(char) * (strlen(fileContentsData[i]) + 1));
             strcpy(alarm->trigger, fileContentsData[i]);
         } else if (strcmp(state[stateNum], "VALARM") == 0) {//parsing alarm properties
             List alarmList = (**obj).event->alarms;
-            Alarm * alarm = getFromFront(alarmList);
+            Alarm * alarm = getFromBack(alarmList);
             Property * prop = malloc(sizeof(Property) + ((1 + strlen(fileContentsData[i])) *sizeof(char)));
             strcpy(prop->propName, fileContentsType[i]);
             strcpy(prop->propDescr, fileContentsData[i]);
@@ -293,12 +296,11 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
             (**obj).event->properties = propList;
         }
     }
-
     
-    Alarm * alarm = getFromFront((**obj).event->alarms);
-    printf("\n%s\n", toString(alarm->properties)); 
-    
-    //toString((**obj).event->properties))
+    for (int i = 0; fileContentsType[i] != NULL; i++) {
+        free(fileContentsType[i]);
+    }
+    free(fileContentsType);
     
     return OK;
 }
@@ -312,7 +314,20 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
 **/
 
 void deleteCalendar(Calendar* obj) {
+    
+    if (obj->event->alarms.head != NULL) {
+        Alarm* elem;
+        ListIterator iter = createIterator(obj->event->alarms);
 
+        while ((elem = nextElement(&iter)) != NULL) {
+            free(elem->trigger);
+            clearList(&elem->properties);
+        }
+    }
+    clearList(&obj->event->alarms);
+    clearList(&obj->event->properties);
+    free(obj->event);
+    free(obj);
 }
 
 
@@ -325,26 +340,77 @@ void deleteCalendar(Calendar* obj) {
 **/
 
 char* printCalendar(const Calendar* obj) {
-    char* printString = malloc(1000);
+    char* printStr;
+    char* tmpStr;
+        
+    if (obj == NULL) {
+        return "list is null\n";
+    }
     
-    //char* version = obj->version;
-    //snprintf(printString, 1000, "%f", obj->version);
+    tmpStr = (char*)malloc(sizeof(char)*1000);
+    printStr = (char*)malloc(sizeof(char)*10000);
+
+    sprintf(tmpStr, "Calendar: version = %f, prodID = %s\n", obj->version, obj->prodID);
+    strcat(printStr, tmpStr);
+    sprintf(tmpStr, "Event\n\tUID = %s\n", obj->event->UID);
+    strcat(printStr, tmpStr);
+    int UTC = 0;
+    if (obj->event->creationDateTime.UTC) {
+        UTC = 1;
+    }
+    sprintf(tmpStr, "\tcreationDateTime = %s:%s, UTC=%d\n", obj->event->creationDateTime.date, obj->event->creationDateTime.time, UTC);
+    strcat(printStr, tmpStr);
+    //alarm
+    sprintf(tmpStr, "\tAlarms:\n");
+    strcat(printStr, tmpStr);
+
+    if (obj->event->alarms.head != NULL) {    
+        Alarm* elemA;
+        ListIterator iterA = createIterator(obj->event->alarms);
     
-    //strcat(printString, version);
-    
-    return printString;
+        while ((elemA = nextElement(&iterA)) != NULL) {
+            Alarm * alarm = elemA;
+            sprintf(tmpStr, "\t\tAction: %s\n\t\tTrigger: %s\n", alarm->action, alarm->trigger);
+            strcat(printStr, tmpStr);
+            //alarm properties
+            sprintf(tmpStr, "\t\tProperties:\n");
+            strcat(printStr, tmpStr);
+
+            if (alarm->properties.head != NULL) {
+                Property* elem;
+                ListIterator iter = createIterator(alarm->properties);
+
+                while ((elem = nextElement(&iter)) != NULL) {
+                    Property * prop = elem;
+                    sprintf(tmpStr, "\t\t- %s:%s\n", prop->propName, prop->propDescr);
+                    strcat(printStr, tmpStr);
+                }
+                sprintf(tmpStr, "\n");
+                strcat(printStr, tmpStr);
+            }
+        }
+    }
+    //event properties
+    sprintf(tmpStr, "\n\tOther properties:\n");
+    strcat(printStr, tmpStr);
+
+    if (obj->event->properties.head != NULL) {
+        Property* elem;
+        ListIterator iter = createIterator(obj->event->properties);
+
+        while ((elem = nextElement(&iter)) != NULL) {
+            Property * prop = elem;
+            sprintf(tmpStr, "\t\t- %s:%s\n", prop->propName, prop->propDescr);
+            strcat(printStr, tmpStr);
+        }
+    }
+    free(tmpStr);
+    return printStr;
 }
 
-
-
-/** Function to "convert" the ErrorCode into a humanly redabale string.
- *@return a string contaning a humanly readable representation of the error code by indexing into 
-          the descr array using rhe error code enum value as an index
- *@param err - an error code
-**/
 const char* printError(ErrorCode err) {
     if (err == OK) {
-        return "OK";
+        return "Allocated object\nFile parsed successfuly\n";
     } else if (err == INV_FILE) {
         return "INV_FILE";
     } else if (err == INV_CAL) {
@@ -369,11 +435,16 @@ const char* printError(ErrorCode err) {
 
 
 int main (void) {
-    char * str = "testiCal.ics";
-    Calendar iCal;
-    Calendar *pointer = &iCal;
-    Calendar **data = &pointer;
+    char * str = "testCalLong.ics";
+    Calendar *iCal = malloc(sizeof(Calendar));
+    Calendar **data = &iCal;
     ErrorCode temp = createCalendar(str, data);
     
-    printf("Error: %s\n", printError(temp));
+    printf("ErrorCode:\n%s", printError(temp));
+
+    char* printCal = printCalendar(iCal);    
+    printf("%s", printCal);
+    free(printCal);
+
+    deleteCalendar(iCal);
 }
