@@ -3,6 +3,12 @@
 
 #include <ctype.h>
 
+int isDateTimeMalformed(char *dateTime);
+
+int isVersionMalformed(char * version);
+
+char* getFileExtention(char *fileName);
+
 int getFileLenght(char *fileName);
 
 void removeSpacesFromfrontOfString(char *str);
