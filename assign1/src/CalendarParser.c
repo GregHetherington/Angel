@@ -102,8 +102,14 @@ int isStringOnlySpaces(char *str) {
     }
 }
 
-void  testDestroy(void *data) {
+void propDestroy(void *data) {
     free(data);
+}
+void alarmDestroy(void *data) {
+    Alarm* tmpAlarm;
+    tmpAlarm = (Alarm*)data;
+    free(tmpAlarm->trigger);
+    free(tmpAlarm);
 }
 char * printAlarm(void *toBePrinted) {
     char* tmpStr;
@@ -232,12 +238,12 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                 strcpy((**obj).event->UID, "-1");
                 strcpy((**obj).event->creationDateTime.time, "-1");
                 strcpy((**obj).event->creationDateTime.date, "-1");
-                (**obj).event->properties = initializeList(printProp, testDestroy, testCompare);
-                (**obj).event->alarms = initializeList(printAlarm, testDestroy, testCompare);
+                (**obj).event->properties = initializeList(printProp, propDestroy, testCompare);
+                (**obj).event->alarms = initializeList(printAlarm, alarmDestroy, testCompare);
             } else if (strcmp(fileContentsData[i], "VALARM") == 0) {
                 strcpy(state[stateNum], "VALARM");
                 Alarm * newAlarm = malloc(sizeof(Alarm));
-                newAlarm->properties = initializeList(printProp, testDestroy, testCompare);
+                newAlarm->properties = initializeList(printProp, alarmDestroy, testCompare);
                 insertBack(&(**obj).event->alarms, newAlarm);
             } else {
                 strcpy(state[stateNum], "OTHER");
@@ -322,7 +328,7 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
             insertBack(&alarm->properties, prop);
         } else if (strcmp(state[stateNum], "VEVENT") == 0) {//parsing event properties            
             List propList = (**obj).event->properties;
-            Property * prop = malloc(sizeof(Property) + ((1 + strlen(fileContentsData[i])) *sizeof(char)));
+            Property * prop = malloc(sizeof(Property) + sizeof(char)*(1 + strlen(fileContentsData[i])));
             strcpy(prop->propName, fileContentsType[i]);
             strcpy(prop->propDescr, fileContentsData[i]);
             insertBack(&propList, prop);
