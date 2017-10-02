@@ -84,7 +84,8 @@ void clearList(List *list) {
         list->tail = NULL;
         while (current != NULL) {
             next = current->next;
-            list->deleteData(current);
+            list->deleteData(current->data);
+            free(current);
             current = next;
         }
     }
