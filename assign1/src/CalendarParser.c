@@ -283,7 +283,6 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                 } else if (strcmp(fileContentsData[i], "VEVENT") == 0 && strcmp(state[stateNum], "VEVENT") ==0) {
                     //checkfor missing properties
                     if (returnCode == INV_CAL) {
-                        returnCode = OK;
                         if (strcmp((**obj).event->UID, "-1") == 0 || strcmp((**obj).event->creationDateTime.time, "-1") == 0 || strcmp((**obj).event->creationDateTime.date, "-1") == 0) {
                             returnCode = INV_EVENT;
                         }
@@ -379,7 +378,10 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
     free(fileContentsType);
     free(fileContentsData);
     free(state);    
-    
+
+    if (returnCode != OK) {
+        deleteCalendar(&(**obj));
+    }     
     return returnCode;
 }
 
