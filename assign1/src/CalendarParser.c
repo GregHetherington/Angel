@@ -105,7 +105,7 @@ int getFileLenght(char *fileName) {
     char line[128];
     if (f == NULL) {
         return 0;
-    }
+    }                                                
     while (fgets(line, sizeof(line), f) != NULL) {
         for (int i = 0; line[i] != '\0'; i++) {
             if (line[i] == ';') {
@@ -135,13 +135,13 @@ char * printAlarm(void *toBePrinted) {
     char* tmpStr;
     Alarm* tmpName;
     int len;
-
+            
     if (toBePrinted == NULL) {
         return NULL;
     }
-
+                            
     tmpName = (Alarm*)toBePrinted;
-
+                               
     len = strlen(tmpName->action)+strlen(tmpName->trigger)+40;
     tmpStr = (char*)malloc(sizeof(char)*len);
 
@@ -152,18 +152,18 @@ char * printProp(void *toBePrinted) {
     char* tmpStr;
     Property* tmpName;
     int len;
-
+    
     if (toBePrinted == NULL) {
         return NULL;
     }
-
+    
     tmpName = (Property*)toBePrinted;
 
     len = strlen(tmpName->propName)+strlen(tmpName->propDescr)+40;
     tmpStr = (char*)malloc(sizeof(char)*len);
-
+    
     sprintf(tmpStr, "Name:%s Descr:%s\n", tmpName->propName, tmpName->propDescr);
-
+    
     return tmpStr;
 }
 int testCompare(const void * one, const void * two) {
@@ -176,8 +176,8 @@ int testCompare(const void * one, const void * two) {
        File represented by this name must exist and must be readable.
  *@post Either:
         A valid calendar has been created, its address was stored in the variable obj, and OK was returned
-		or
-		An error occurred, the calendar was not created, all temporary memory was freed, obj was set to NULL, and the
+		or 
+		An error occurred, the calendar was not created, all temporary memory was freed, obj was set to NULL, and the 
 		appropriate error code was returned
  *@return the error code indicating success or the error encountered when parsing the calendar
  *@param fileName - a string containing the name of the iCalendar file
@@ -189,8 +189,8 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
         return INV_FILE;
     }
     FILE *iCalFile;
-    iCalFile = fopen(fileName, "r");
-
+    iCalFile = fopen(fileName, "r");        
+    
     char line[128];
     if (iCalFile == NULL) {
         return INV_FILE;
@@ -199,7 +199,7 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
     int fileLenght = getFileLenght(fileName);
     char** fileContentsData = malloc(fileLenght * sizeof(char *));//malloc
     char** fileContentsType = malloc(fileLenght * sizeof(char *));//malloc
-
+    
     while (fgets(line, sizeof(line), iCalFile) != NULL) {
         for (int i = 0; line[i] != '\0'; i++) {
             if (line[i] == ';') {
@@ -226,13 +226,13 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                     }
                     fileContentsType[k] = malloc((strlen(type) + 1) * sizeof(char));//malloc looped
                     strcpy(fileContentsType[k], type);
-
+                    
                     fileContentsData[k] = malloc((strlen(data) + 1) * sizeof(char));//malloc looped
                     strcpy(fileContentsData[k], data);
-
+                                        
                     //printf("{%s}\n", line);
                     //printf("Type: {%s},Data: {%s}\n", fileContentsType[k], fileContentsData[k]);
-
+                    
                     k++;
                     free(type);
                     free(data);
@@ -246,9 +246,9 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
     if (strcmp(fileContentsType[0], "BEGIN") != 0 || strcmp(fileContentsData[0], "VCALENDAR") != 0) {
         return INV_CAL;
     }
-
+    
     Calendar* cal = malloc(sizeof(Calendar));
-
+    
     ErrorCode returnCode = INV_CAL;
     int isTrigger = 0;
     char **state = malloc(10 * sizeof(char *));//malloc
@@ -277,7 +277,7 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                 strcpy(state[stateNum], "VALARM");
                 Alarm * newAlarm = malloc(sizeof(Alarm));
                 strcpy(newAlarm->action, "-1");
-                newAlarm->properties = initializeList(printProp, alarmDestroy, testCompare);
+                newAlarm->properties = initializeList(printProp, propDestroy, testCompare);
                 insertBack(&cal->event->alarms, newAlarm);
                 isTrigger = 0;
             } else {
@@ -308,14 +308,14 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
                     Alarm * alarm = getFromBack(cal->event->alarms);
                     if (returnCode == INV_CAL) {
                         if (strcmp(alarm->action, "-1") == 0 || isTrigger == 0) {
-                            return INV_EVENT;
+                            returnCode = INV_EVENT;
                         }
                     }
                     free(state[stateNum]);
                     stateNum--;
                 } else if (strcmp(state[stateNum], "OTHER") == 0) {
                     free(state[stateNum]);
-                    stateNum--;
+                    stateNum--;                    
                 } else {
                     returnCode = INV_CAL;
                 }
@@ -376,12 +376,12 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
             Alarm * alarm = getFromBack(alarmList);
             Property * prop = malloc(sizeof(Property) + ((1 + strlen(fileContentsData[i])) *sizeof(char)));
             if (strcmp(fileContentsType[i], "") == 0 || fileContentsType[i] == NULL || strcmp(fileContentsData[i], "") == 0 || fileContentsData[i] == NULL) {
-                return INV_EVENT;
+                returnCode = INV_EVENT;
             }
             strcpy(prop->propName, fileContentsType[i]);
             strcpy(prop->propDescr, fileContentsData[i]);
             insertBack(&alarm->properties, prop);
-        } else if (strcmp(state[stateNum], "VEVENT") == 0) {//parsing event properties
+        } else if (strcmp(state[stateNum], "VEVENT") == 0) {//parsing event properties            
             List propList = cal->event->properties;
             Property * prop = malloc(sizeof(Property) + sizeof(char)*(1 + strlen(fileContentsData[i])));
             if (strcmp(fileContentsType[i], "") == 0 || fileContentsType[i] == NULL || strcmp(fileContentsData[i], "") == 0 || fileContentsData[i] == NULL) {
@@ -393,20 +393,20 @@ ErrorCode createCalendar(char* fileName, Calendar** obj) {
             cal->event->properties = propList;
         }
     }
-
+    
     if (returnCode != OK) {
         deleteCalendar(cal);
     } else {
         *obj = cal;
     }
-
+    
     for (int i = 0; i < fileLenght; i++) {
         free(fileContentsType[i]);
         free(fileContentsData[i]);
     }
     free(fileContentsType);
     free(fileContentsData);
-    free(state);
+    free(state);    
 
     return returnCode;
 }
@@ -426,7 +426,6 @@ void deleteCalendar(Calendar* obj) {
         ListIterator iter = createIterator(obj->event->alarms);
 
         while ((elem = nextElement(&iter)) != NULL) {
-            free(elem->trigger);
             clearList(&elem->properties);
         }
     }
@@ -448,11 +447,11 @@ void deleteCalendar(Calendar* obj) {
 char* printCalendar(const Calendar* obj) {
     char* printStr;
     char* tmpStr;
-
+        
     if (obj == NULL) {
         return "list is null\n";
     }
-
+    
     tmpStr = (char*)malloc(sizeof(char)*1000);
     printStr = (char*)malloc(sizeof(char)*10000);
 
@@ -470,10 +469,10 @@ char* printCalendar(const Calendar* obj) {
     sprintf(tmpStr, "\tAlarms:\n");
     strcat(printStr, tmpStr);
 
-    if (obj->event->alarms.head != NULL) {
+    if (obj->event->alarms.head != NULL) {    
         Alarm* elemA;
         ListIterator iterA = createIterator(obj->event->alarms);
-
+    
         while ((elemA = nextElement(&iterA)) != NULL) {
             Alarm * alarm = elemA;
             sprintf(tmpStr, "\t\tAction: %s\n\t\tTrigger: %s\n", alarm->action, alarm->trigger);
