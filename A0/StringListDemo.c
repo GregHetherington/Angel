@@ -25,6 +25,19 @@ void deleteFunc(void *toBeDeleted){
 	free(toBeDeleted);
 }
 
+bool compareFirstName(const void *first, const void *second){
+
+    if (first == NULL || second == NULL){
+        return false;
+    }             
+                    //Elements are "equal" if their first names are equal
+    if (strcmp(first, second) == 0) {
+        return true;
+    } else {
+        return false;
+    }
+}
+
 int main(void){
 	//Allocate the strings
 	char* str[4];
@@ -40,11 +53,13 @@ int main(void){
 	/* 
 	Create the list.  The list is allocated on the stack, and initializeList returns the list struct.
 	*/
-	List list = initializeList(&printFunc, &deleteFunc, &compareFunc);
-
+	List list;
+	printf("len: %d\n", getLength(list));
+	list = initializeList(&printFunc, &deleteFunc, &compareFunc);
+    printf("len: %d\n", getLength(list));
 	//Populate the list
 	for (int i = 0; i < 4; i++){
-		insertBack(&list, (void*)str[i]);
+		insertBack(&list, (void*)str[i]); printf("len: %d\n", getLength(list));
 	}
 	
 	void* elem;
@@ -62,6 +77,9 @@ int main(void){
 		//Since str is the pionter to the stored string, we don't need to free it
 		printf("%s", str);
 	}
+
+    char* data = findElement(list, &compareFirstName, "Hello");
+    printf("\nSearchTerm: %s", data);
 
 	printf("\n");
 	
