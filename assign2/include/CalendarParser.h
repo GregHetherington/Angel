@@ -60,8 +60,8 @@ typedef struct ical {
 	//Product ID.  We will assume that the UserID, even if malformed, does not exceed 1000 bytes
 	char 	prodID[1000];
 	
-	//List events;
-	Event* event;
+	List events;
+	//Event* event;
     
     List properties;
     
